@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Life HUD</title>
-    <link rel="stylesheet" href="./style.css?v=6">
+    <link rel="stylesheet" href="./style.css?v=7">
 </head>
 <body>
 
@@ -33,7 +33,7 @@
     <!-- Main Game Container -->
     <div class="game-container">
         
-        <!-- FIXED NAVIGATION BAR - Stays visible permanently at the top -->
+        <!-- FIXED NAVIGATION BAR - Placed completely outside the panels so it NEVER disappears -->
         <div class="nav-tabs">
             <button id="tab-hud" class="tab-btn active-tab" onclick="switchTab('hud')">HUD</button>
             <button id="tab-stats" class="tab-btn" onclick="switchTab('stats')">STATS</button>
@@ -128,8 +128,7 @@
         </div>
     </div>
 
-    <script src="./script.js?v=6"></script>
+    <!-- External Script Call -->
+    <script src="./script.js?v=7"></script>
 </body>
 </html>
-
-
