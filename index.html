@@ -4,59 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Life HUD</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; font-weight: bold; }
-        body { background: #0b0c10; color: #c5c6c7; display: flex; justify-content: center; padding: 15px; min-height: 100vh; }
-        .game-container { width: 100%; max-width: 460px; background: #1f2833; padding: 20px; border-radius: 12px; border: 3px solid #45a29e; box-shadow: 0 0 20px rgba(69,162,158,0.3); margin-top: 20px; height: fit-content; }
-        .nav-tabs { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #0b0c10; padding-bottom: 10px; }
-        .tab-btn { flex: 1; background: #0b0c10; color: #45a29e; border: 1px solid #45a29e; padding: 10px; cursor: pointer; font-size: 13px; border-radius: 4px; }
-        .tab-btn:hover { color: #66fcf1; border-color: #66fcf1; }
-        .active-tab { background: #45a29e; color: #0b0c10 !important; border-color: #45a29e; }
-        .char-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px dashed #45a29e; padding-bottom: 15px; }
-        .char-header h2 { color: #66fcf1; letter-spacing: 1px; font-size: 20px; }
-        .date-tag { background: #45a29e; color: #0b0c10; padding: 6px 12px; border-radius: 4px; font-size: 13px; }
-        .stat-container { margin-bottom: 20px; }
-        .stat-labels { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
-        .hp-text { color: #ff4d4d; }
-        .mp-text { color: #00ffff; }
-        .bar-border { width: 100%; height: 26px; background: #0b0c10; border: 2px solid #c5c6c7; border-radius: 6px; overflow: hidden; padding: 2px; }
-        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease-out; }
-        .hp-bar { background: linear-gradient(90deg, #990000, #ff4d4d); box-shadow: 0 0 8px rgba(255,77,77,0.6); }
-        .mp-bar { background: linear-gradient(90deg, #0088cc, #00ffff); box-shadow: 0 0 8px rgba(0,255,255,0.6); }
-        .action-panel { background: #0b0c10; border: 2px solid #45a29e; border-radius: 8px; padding: 15px; margin-top: 25px; }
-        .action-panel h3, .log-header h3 { font-size: 13px; color: #66fcf1; margin-bottom: 12px; }
-        #event-text { width: 100%; background: #1f2833; border: 2px solid #45a29e; color: #fff; padding: 12px; border-radius: 6px; font-size: 15px; margin-bottom: 15px; outline: none; }
-        .value-pickers { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
-        .picker-group { display: flex; flex-direction: column; width: 48%; gap: 6px; }
-        .picker-group label { font-size: 11px; }
-        .picker-group input { background: #1f2833; border: 1px solid #45a29e; color: #fff; padding: 10px; text-align: center; border-radius: 4px; font-size: 16px; }
-        #submit-event-btn { width: 100%; background: #45a29e; color: #0b0c10; border: none; padding: 14px; font-size: 14px; border-radius: 6px; cursor: pointer; }
-        .log-panel { margin-top: 25px; }
-        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .clear-btn { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; font-size: 11px; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
-        .combat-log-box { background: #0b0c10; border: 2px solid #1f2833; border-radius: 8px; height: 150px; overflow-y: auto; padding: 12px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
-        .log-entry { line-height: 1.4; padding-bottom: 4px; border-bottom: 1px dashed #1f2833; word-break: break-word; }
-        .system-msg { color: #888; }
-        .gain-msg { color: #2ecc71; }
-        .loss-msg { color: #e74c3c; }
-        .tab-panel { width: 100%; }
-        .hidden { display: none !important; }
-        .placeholder-msg { text-align: center; padding: 40px 10px; color: #888; line-height: 1.6; font-size: 14px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,12,16,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .modal-box { background: #1f2833; border: 3px solid #45a29e; width: 100%; max-width: 420px; padding: 30px 20px; border-radius: 12px; text-align: center; box-shadow: 0 0 25px rgba(102,252,241,0.2); }
-        .modal-box h2 { color: #66fcf1; margin-bottom: 15px; font-size: 22px; }
-        .modal-box p { font-size: 14px; color: #c5c6c7; margin-bottom: 25px; line-height: 1.5; }
-        .modal-options { display: flex; flex-direction: column; gap: 15px; }
-        .modal-btn { display: flex; flex-direction: column; padding: 15px; border-radius: 8px; cursor: pointer; background: #0b0c10; text-align: left; width: 100%; }
-        .btn-title { font-size: 15px; margin-bottom: 4px; }
-        .btn-desc { font-size: 12px; color: #888; }
-        .perfect { border: 2px solid #2ecc71; } .perfect .btn-title { color: #2ecc71; }
-        .mediocre { border: 2px solid #f1c40f; } .mediocre .btn-title { color: #f1c40f; }
-        .trash { border: 2px solid #e74c3c; } .trash .btn-title { color: #e74c3c; }
-    </style>
+    <!-- The ?v=11 forces the browser to bypass any old cached styles -->
+    <link rel="stylesheet" href="./style.css?v=11">
 </head>
 <body>
 
+    <!-- Morning Awakening Modal Overlay -->
     <div id="awakening-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <h2>☀️ DAILY AWAKENING</h2>
@@ -78,6 +31,7 @@
         </div>
     </div>
 
+    <!-- Main Game Container -->
     <div class="game-container">
         <div class="nav-tabs">
             <button id="tab-hud" class="tab-btn active-tab" onclick="switchTab('hud')">HUD</button>
@@ -85,6 +39,7 @@
             <button id="tab-quests" class="tab-btn" onclick="switchTab('quests')">QUESTS</button>
         </div>
 
+        <!-- PANEL 1: HUD ENGINE PANEL -->
         <div id="panel-hud" class="tab-panel">
             <div class="char-header">
                 <h2>REAL LIFE HUD</h2>
@@ -119,6 +74,7 @@
             </div>
         </div>
 
+        <!-- PANEL 2: STATS CORE PANEL -->
         <div id="panel-stats" class="tab-panel hidden">
             <div class="char-header"><h2>ATTRIBUTES</h2></div>
             <div class="placeholder-msg">
@@ -132,132 +88,14 @@
             </div>
         </div>
 
+        <!-- PANEL 3: QUESTS PANEL -->
         <div id="panel-quests" class="tab-panel hidden">
             <div class="char-header"><h2>QUEST LOG</h2></div>
             <div class="placeholder-msg"><p>📜 Quest management and skill tree vectors loading in next iteration.</p></div>
         </div>
     </div>
 
-    <script>
-        const STATE_KEY = 'hud_system_state';
-    let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || { hp: 100, mp: 100, mpMax: 100, lastSavedDate: "" };
-    
-    if (!systemState.mpMax || systemState.mpMax <= 0) systemState.mpMax = 100;
-    if (systemState.hp === undefined) systemState.hp = 100;
-    if (systemState.mp === undefined) systemState.mp = 100;
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const todayStr = getTodayDateString();
-        if (document.getElementById('date-display')) document.getElementById('date-display').textContent = todayStr;
-        const modal = document.getElementById('awakening-modal');
-        if (systemState.lastSavedDate !== todayStr && modal) { 
-            modal.classList.remove('hidden'); 
-        } else { 
-            renderInterface(); 
-        }
-    });
-
-    function processAwakening(choice) {
-        systemState.lastSavedDate = getTodayDateString();
-        if (choice === 'perfect') { 
-            systemState.hp = 100; systemState.mpMax = 100; systemState.mp = 100; 
-            appendLogToSystem("[Awakening: Perfect Rest logged.]"); 
-        }
-        else if (choice === 'mediocre') { 
-            systemState.hp = Math.min(100, systemState.hp + 25); systemState.mpMax = 70; systemState.mp = 70; 
-            appendLogToSystem("[Awakening: Mediocre Sleep logged.]"); 
-        }
-        else if (choice === 'trash') { 
-            systemState.hp = Math.max(0, systemState.hp - 10); systemState.mpMax = 40; systemState.mp = 40; 
-            appendLogToSystem("[Awakening: Trash Sleep logged.]"); 
-        }
-        const modal = document.getElementById('awakening-modal');
-        if (modal) modal.classList.add('hidden');
-        saveStateToStorage(); 
-        renderInterface();
-    }
-
-    function applyLifeEvent() {
-        const textElement = document.getElementById('event-text');
-        const hpElement = document.getElementById('event-hp');
-        const mpElement = document.getElementById('event-mp');
-        if (!textElement || !hpElement || !mpElement) return;
-        
-        const rawName = textElement.value.trim();
-        if (rawName === "") { 
-            textElement.style.borderColor = "#ff4d4d"; 
-            textElement.placeholder = "NAME REQUIRED!"; 
-            return; 
-        }
-        
-        textElement.style.borderColor = "#45a29e"; 
-        textElement.placeholder = "Type event name (REQUIRED)...";
-        
-        const hpMod = parseInt(hpElement.value) || 0; 
-        const mpMod = parseInt(mpElement.value) || 0;
-        
-        systemState.hp = Math.min(100, Math.max(0, systemState.hp + hpMod));
-        systemState.mp = Math.min(systemState.mpMax, Math.max(0, systemState.mp + mpMod));
-        
-        saveStateToStorage(); 
-        renderInterface();
-        
-        const logBox = document.getElementById('combat-log');
-        if (logBox) {
-            const newEntry = document.createElement('div');
-            newEntry.className = `log-entry ${(hpMod < 0 || mpMod < 0) ? 'loss-msg' : 'gain-msg'}`;
-            newEntry.textContent = `⚔️ ${rawName}: ${hpMod >= 0 ? '+' : ''}${hpMod} HP, ${mpMod >= 0 ? '+' : ''}${mpMod} MP`;
-            logBox.appendChild(newEntry); 
-            logBox.scrollTop = logBox.scrollHeight;
-            localStorage.setItem('hud_html_log', logBox.innerHTML);
-        }
-        textElement.value = "";
-    }
-
-    function renderInterface() {
-        if (document.getElementById('hp-current')) document.getElementById('hp-current').textContent = systemState.hp;
-        if (document.getElementById('mp-current')) document.getElementById('mp-current').textContent = systemState.mp;
-        if (document.getElementById('mp-max-label')) document.getElementById('mp-max-label').textContent = systemState.mpMax;
-        if (document.getElementById('hp-fill')) document.getElementById('hp-fill').style.width = `${systemState.hp}%`;
-        if (document.getElementById('mp-fill')) document.getElementById('mp-fill').style.width = `${(systemState.mp / systemState.mpMax) * 100}%`;
-        
-        const logBox = document.getElementById('combat-log'); 
-        const savedHtmlLog = localStorage.getItem('hud_html_log');
-        if (logBox && savedHtmlLog) { 
-            logBox.innerHTML = savedHtmlLog; 
-            logBox.scrollTop = logBox.scrollHeight; 
-        }
-    }
-
-    function switchTab(targetTab) {
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-        document.querySelectorAll('.nav-tabs .tab-btn').forEach(t => t.remove('active-tab'));
-        if (document.getElementById(`panel-${targetTab}`)) document.getElementById(`panel-${targetTab}`).classList.remove('hidden');
-        if (document.getElementById(`tab-${targetTab}`)) document.getElementById(`tab-${targetTab}`).classList.add('active-tab');
-    }
-
-    function getTodayDateString() { 
-        return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase(); 
-    }
-
-    function appendLogToSystem(message) {
-        const logBox = document.getElementById('combat-log');
-        if (logBox) {
-            const msg = document.createElement('div'); 
-            msg.className = 'log-entry system-msg'; 
-            msg.textContent = message;
-            logBox.appendChild(msg); 
-            localStorage.setItem('hud_html_log', logBox.innerHTML);
-        }
-    }
-
-    function saveStateToStorage() { 
-        localStorage.setItem(STATE_KEY, JSON.stringify(systemState)); 
-    }
-
-    function clearLog() { 
-        if (document.getElementById('combat-log')) {
-            document.getElementById('combat-log').innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>'; 
-        }
-        localStorage.removeItem('hud_html_log'); 
-    }
+    <!-- The ?v=11 forces the browser to bypass old cached logic scripts -->
+    <script src="./script.js?v=11"></script>
+</body>
+</html>
