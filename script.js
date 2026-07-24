@@ -1,6 +1,6 @@
-// Strict Global State Tracking Variable Definitions
 const STATE_KEY = 'hud_system_state';
 
+// Load stored configurations cleanly or use safe defaults
 let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     hp: 100,
     mp: 100,
@@ -8,16 +8,13 @@ let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     lastSavedDate: ""
 };
 
-// Triggers layout paint checks the millisecond DOM compiles safely
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Calculate and update the current calendar timestamp string safely
     const todayStr = getTodayDateString();
     const dateDisplay = document.getElementById('date-display');
     if (dateDisplay) {
         dateDisplay.textContent = todayStr;
     }
 
-    // 2. Automated Morning Awakening Lock Checker
     const modal = document.getElementById('awakening-modal');
     if (systemState.lastSavedDate !== todayStr && modal) {
         modal.classList.remove('hidden');
@@ -26,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Process option selection made via daily awakening overlay prompt
 function processAwakening(choice) {
     const todayStr = getTodayDateString();
     systemState.lastSavedDate = todayStr;
@@ -48,7 +44,6 @@ function processAwakening(choice) {
         appendLogToSystem("[Awakening: Trash Sleep logged. HP -10, MP Max capped at 40.]");
     }
 
-    // Hide prompt layer safely
     const modal = document.getElementById('awakening-modal');
     if (modal) modal.classList.add('hidden');
     
@@ -68,14 +63,12 @@ function applyLifeEvent() {
     const mpMod = parseInt(mpElement.value) || 0;
     const finalEventName = rawName === "" ? "Activity Tracked" : rawName;
 
-    // Enforce limits parsing custom cap boundaries dynamically
     systemState.hp = Math.min(100, Math.max(0, systemState.hp + hpMod));
     systemState.mp = Math.min(systemState.mpMax, Math.max(0, systemState.mp + mpMod));
 
     saveStateToStorage();
     renderInterface();
 
-    // Create entry element inside scroll history box
     const logBox = document.getElementById('combat-log');
     if (logBox) {
         const newEntry = document.createElement('div');
@@ -95,7 +88,6 @@ function applyLifeEvent() {
 }
 
 function renderInterface() {
-    // Safety check wrappers to prevent textContent property errors
     const hpCurrentEl = document.getElementById('hp-current');
     const mpCurrentEl = document.getElementById('mp-current');
     const mpMaxEl = document.getElementById('mp-max-label');
@@ -107,9 +99,8 @@ function renderInterface() {
     if (mpMaxEl) mpMaxEl.textContent = systemState.mpMax;
 
     if (hpFillEl) hpFillEl.style.width = `${systemState.hp}%`;
-    if (mpFillEl) mpFillEl.style.width = `${(systemState.mp / 100) * 100}%`;
+    if (mpFillEl) mpFillEl.style.width = `${(systemState.mp / systemState.mpMax) * 100}%`;
 
-    // Load historical strings inside scroll element 
     const logBox = document.getElementById('combat-log');
     const savedHtmlLog = localStorage.getItem('hud_html_log');
     if (logBox && savedHtmlLog) {
@@ -123,7 +114,7 @@ function switchTab(targetTab) {
     const tabs = document.querySelectorAll('.nav-tabs .tab-btn');
 
     panels.forEach(p => p.classList.add('hidden'));
-    tabs.forEach(t => t.classList.remove('active-tab'));
+    tabs.forEach(t => t.remove('active-tab'));
 
     const targetPanel = document.getElementById(`panel-${targetTab}`);
     const targetTabBtn = document.getElementById(`tab-${targetTab}`);
