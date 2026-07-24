@@ -2,12 +2,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Courier New', Courier, monospace; /* Classic pixel/game feel */
+    font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
 }
 
 body {
-    background-color: #0b0c10; /* Deep space dark background */
+    background-color: #0b0c10;
     color: #c5c6c7;
     display: flex;
     justify-content: center;
@@ -17,10 +17,10 @@ body {
 .game-container {
     width: 100%;
     max-width: 420px;
-    background: #1f2833; /* Dark armor slate gray */
+    background: #1f2833;
     padding: 25px;
     border-radius: 12px;
-    border: 3px solid #45a29e; /* Cyberpunk border color */
+    border: 3px solid #45a29e;
     box-shadow: 0 0 20px rgba(69, 162, 158, 0.3);
     margin-top: 50px;
 }
@@ -31,20 +31,39 @@ body {
     align-items: center;
     margin-bottom: 30px;
     border-bottom: 2px dashed #45a29e;
-    padding-bottom: 10px;
+    padding-bottom: 15px;
 }
 
 .char-header h2 {
-    color: #66fcf1; /* Neon cyan text */
+    color: #66fcf1;
     letter-spacing: 2px;
+}
+
+/* New Level Controller Wrapper */
+.level-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lvl-btn {
+    background-color: #0b0c10;
+    color: #66fcf1;
+    border: 1px solid #45a29e;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 .level-tag {
     background-color: #45a29e;
     color: #0b0c10;
-    padding: 4px 8px;
+    padding: 6px 12px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
+    min-width: 85px;
+    text-align: center;
 }
 
 .stat-container {
@@ -62,10 +81,9 @@ body {
 .hp-text { color: #ff4d4d; }
 .mp-text { color: #3399ff; }
 
-/* The outer framing of the status bar */
 .bar-border {
     width: 100%;
-    height: 24px;
+    height: 26px;
     background-color: #0b0c10;
     border: 2px solid #c5c6c7;
     border-radius: 6px;
@@ -74,14 +92,12 @@ body {
     padding: 2px;
 }
 
-/* Base style for the moving bar inside */
 .bar-fill {
     height: 100%;
     border-radius: 3px;
-    transition: width 0.3s ease-out; /* Smooth health drain animation */
+    transition: width 0.2s ease-out; /* Slightly faster for crisp mobile performance */
 }
 
-/* Gamified Neon Gradients */
 .hp-bar {
     background: linear-gradient(90deg, #b30000, #ff4d4d);
     box-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
@@ -92,7 +108,6 @@ body {
     box-shadow: 0 0 10px rgba(51, 153, 255, 0.8);
 }
 
-/* Step Controllers Layout */
 .controls {
     display: flex;
     gap: 5px;
@@ -104,10 +119,11 @@ button {
     background-color: #0b0c10;
     color: #66fcf1;
     border: 1px solid #45a29e;
-    padding: 8px 12px;
+    padding: 10px 14px; /* Slightly bigger tap targets for mobile phones */
     border-radius: 4px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
+    user-select: none;
 }
 
 button:active {
@@ -115,22 +131,21 @@ button:active {
     color: #0b0c10;
 }
 
-/* Center input box configuration */
 input[type="number"] {
-    width: 65px;
+    width: 70px;
     text-align: center;
     background-color: #0b0c10;
     color: #ffffff;
     border: 2px solid #45a29e;
-    padding: 6px;
+    padding: 8px;
     border-radius: 4px;
     font-size: 16px;
 }
 
-/* Hide native up/down mini arrows from inputs */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+
 

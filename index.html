@@ -12,7 +12,11 @@
         <!-- Character Info Header -->
         <div class="char-header">
             <h2>PLAYER 1</h2>
-            <span class="level-tag">LVL 99</span>
+            <div class="level-control">
+                <button class="lvl-btn" onclick="changeLevel(-1)">-</button>
+                <span class="level-tag">LVL <span id="level-value">99</span></span>
+                <button class="lvl-btn" onclick="changeLevel(1)">+</button>
+            </div>
         </div>
 
         <!-- Health Section -->
@@ -27,7 +31,7 @@
             <div class="controls">
                 <button onclick="changeStat('hp', -10)">-10</button>
                 <button onclick="changeStat('hp', -1)">-1</button>
-                <input type="number" id="hp-input" min="1" max="100" value="100" oninput="setStat('hp')">
+                <input type="number" id="hp-input" min="1" max="100" value="100" onchange="setStat('hp')" onkeyup="setStat('hp')">
                 <button onclick="changeStat('hp', 1)">+1</button>
                 <button onclick="changeStat('hp', 10)">+10</button>
             </div>
@@ -45,7 +49,7 @@
             <div class="controls">
                 <button onclick="changeStat('mp', -10)">-10</button>
                 <button onclick="changeStat('mp', -1)">-1</button>
-                <input type="number" id="mp-input" min="1" max="100" value="100" oninput="setStat('mp')">
+                <input type="number" id="mp-input" min="1" max="100" value="100" onchange="setStat('mp')" onkeyup="setStat('mp')">
                 <button onclick="changeStat('mp', 1)">+1</button>
                 <button onclick="changeStat('mp', 10)">+10</button>
             </div>
