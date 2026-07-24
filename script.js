@@ -1,7 +1,6 @@
-// Local Storage Persistence Mapping Keys
+// Strict Global State Tracking Variable Definitions
 const STATE_KEY = 'hud_system_state';
 
-// Load stored profile configurations or initialize complete clean defaults
 let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     hp: 100,
     mp: 100,
@@ -9,17 +8,20 @@ let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     lastSavedDate: ""
 };
 
+// Triggers layout paint checks the millisecond DOM compiles safely
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Calculate the current calendar timestamp string
+    // 1. Calculate and update the current calendar timestamp string safely
     const todayStr = getTodayDateString();
-    document.getElementById('date-display').textContent = todayStr;
+    const dateDisplay = document.getElementById('date-display');
+    if (dateDisplay) {
+        dateDisplay.textContent = todayStr;
+    }
 
     // 2. Automated Morning Awakening Lock Checker
-    if (systemState.lastSavedDate !== todayStr) {
-        // Trigger modal prompt to lock input interaction
-        document.getElementById('awakening-modal').classList.remove('hidden');
+    const modal = document.getElementById('awakening-modal');
+    if (systemState.lastSavedDate !== todayStr && modal) {
+        modal.classList.remove('hidden');
     } else {
-        // Render historical layout elements straight from system state data cache
         renderInterface();
     }
 });
@@ -37,17 +39,19 @@ function processAwakening(choice) {
     } else if (choice === 'mediocre') {
         systemState.hp = Math.min(100, systemState.hp + 25);
         systemState.mpMax = 70;
-        systemState.mp = 70; // Restores up to the capped limit baseline
+        systemState.mp = 70;
         appendLogToSystem("[Awakening: Mediocre Sleep logged. HP +25, MP Max capped at 70.]");
     } else if (choice === 'trash') {
         systemState.hp = Math.max(0, systemState.hp - 10);
         systemState.mpMax = 40;
-        systemState.mp = 40; // Restores up to the crushed baseline limits
+        systemState.mp = 40;
         appendLogToSystem("[Awakening: Trash Sleep logged. HP -10, MP Max capped at 40.]");
     }
 
-    // Hide prompt layer and update interface variables properties modules
-    document.getElementById('awakening-modal').classList.add('hidden');
+    // Hide prompt layer safely
+    const modal = document.getElementById('awakening-modal');
+    if (modal) modal.classList.add('hidden');
+    
     saveStateToStorage();
     renderInterface();
 }
@@ -56,6 +60,8 @@ function applyLifeEvent() {
     const textElement = document.getElementById('event-text');
     const hpElement = document.getElementById('event-hp');
     const mpElement = document.getElementById('event-mp');
+
+    if (!textElement || !hpElement || !mpElement) return;
 
     const rawName = textElement.value.trim();
     const hpMod = parseInt(hpElement.value) || 0;
@@ -71,56 +77,59 @@ function applyLifeEvent() {
 
     // Create entry element inside scroll history box
     const logBox = document.getElementById('combat-log');
-    const newEntry = document.createElement('div');
-    const styleIndicator = (hpMod < 0 || mpMod < 0) ? 'loss-msg' : 'gain-msg';
-    newEntry.className = `log-entry ${styleIndicator}`;
+    if (logBox) {
+        const newEntry = document.createElement('div');
+        const styleIndicator = (hpMod < 0 || mpMod < 0) ? 'loss-msg' : 'gain-msg';
+        newEntry.className = `log-entry ${styleIndicator}`;
 
-    const hpSign = hpMod >= 0 ? `+${hpMod}` : `${hpMod}`;
-    const mpSign = mpMod >= 0 ? `+${mpMod}` : `${mpMod}`;
-    newEntry.textContent = `⚔️ ${finalEventName}: ${hpSign} HP, ${mpSign} MP`;
+        const hpSign = hpMod >= 0 ? `+${hpMod}` : `${hpMod}`;
+        const mpSign = mpMod >= 0 ? `+${mpMod}` : `${mpMod}`;
+        newEntry.textContent = `⚔️ ${finalEventName}: ${hpSign} HP, ${mpSign} MP`;
 
-    logBox.appendChild(newEntry);
-    logBox.scrollTop = logBox.scrollHeight;
+        logBox.appendChild(newEntry);
+        logBox.scrollTop = logBox.scrollHeight;
+        localStorage.setItem('hud_html_log', logBox.innerHTML);
+    }
     
-    // Save current log HTML block properties inside LocalStorage persistence tree
-    localStorage.setItem('hud_html_log', logBox.innerHTML);
     textElement.value = "";
 }
 
 function renderInterface() {
-    // 1. Render numeric outputs
-    document.getElementById('hp-current').textContent = systemState.hp;
-    document.getElementById('mp-current').textContent = systemState.mp;
-    document.getElementById('mp-max-label').textContent = systemState.mpMax;
+    // Safety check wrappers to prevent textContent property errors
+    const hpCurrentEl = document.getElementById('hp-current');
+    const mpCurrentEl = document.getElementById('mp-current');
+    const mpMaxEl = document.getElementById('mp-max-label');
+    const hpFillEl = document.getElementById('hp-fill');
+    const mpFillEl = document.getElementById('mp-fill');
 
-    // 2. Scale horizontal vector graphic widths 
-    document.getElementById('hp-fill').style.width = `${systemState.hp}%`;
-    
-    // Calculate percentage based on absolute total size, not 100% capacity limit
-    document.getElementById('mp-fill').style.width = `${(systemState.mp / 100) * 100}%`;
+    if (hpCurrentEl) hpCurrentEl.textContent = systemState.hp;
+    if (mpCurrentEl) mpCurrentEl.textContent = systemState.mp;
+    if (mpMaxEl) mpMaxEl.textContent = systemState.mpMax;
 
-    // 3. Load up historical strings inside scroll element 
+    if (hpFillEl) hpFillEl.style.width = `${systemState.hp}%`;
+    if (mpFillEl) mpFillEl.style.width = `${(systemState.mp / 100) * 100}%`;
+
+    // Load historical strings inside scroll element 
+    const logBox = document.getElementById('combat-log');
     const savedHtmlLog = localStorage.getItem('hud_html_log');
-    if (savedHtmlLog) {
-        document.getElementById('combat-log').innerHTML = savedHtmlLog;
-        const logBox = document.getElementById('combat-log');
+    if (logBox && savedHtmlLog) {
+        logBox.innerHTML = savedHtmlLog;
         logBox.scrollTop = logBox.scrollHeight;
     }
 }
 
-// Single Page Application Navigation Tab Switcher Engine
 function switchTab(targetTab) {
-    // Collect layout panel objects
     const panels = document.querySelectorAll('.tab-panel');
     const tabs = document.querySelectorAll('.nav-tabs .tab-btn');
 
-    // Hide panels and wipe selection borders styling
     panels.forEach(p => p.classList.add('hidden'));
     tabs.forEach(t => t.classList.remove('active-tab'));
 
-    // Reveal designated path elements
-    document.getElementById(`panel-${targetTab}`).classList.remove('hidden');
-    document.getElementById(`tab-${targetTab}`).classList.add('active-tab');
+    const targetPanel = document.getElementById(`panel-${targetTab}`);
+    const targetTabBtn = document.getElementById(`tab-${targetTab}`);
+    
+    if (targetPanel) targetPanel.classList.remove('hidden');
+    if (targetTabBtn) targetTabBtn.classList.add('active-tab');
 }
 
 function getTodayDateString() {
@@ -130,11 +139,13 @@ function getTodayDateString() {
 
 function appendLogToSystem(message) {
     const logBox = document.getElementById('combat-log');
-    const systemMsg = document.createElement('div');
-    systemMsg.className = 'log-entry system-msg';
-    systemMsg.textContent = message;
-    logBox.appendChild(systemMsg);
-    localStorage.setItem('hud_html_log', logBox.innerHTML);
+    if (logBox) {
+        const systemMsg = document.createElement('div');
+        systemMsg.className = 'log-entry system-msg';
+        systemMsg.textContent = message;
+        logBox.appendChild(systemMsg);
+        localStorage.setItem('hud_html_log', logBox.innerHTML);
+    }
 }
 
 function saveStateToStorage() {
@@ -142,7 +153,11 @@ function saveStateToStorage() {
 }
 
 function clearLog() {
-    document.getElementById('combat-log').innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
+    const logBox = document.getElementById('combat-log');
+    if (logBox) {
+        logBox.innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
+    }
     localStorage.removeItem('hud_html_log');
 }
+
 
