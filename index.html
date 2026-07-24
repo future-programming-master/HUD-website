@@ -44,15 +44,15 @@
         <!-- Dynamic Action Logger Form -->
         <div class="action-panel">
             <h3>LOG NEW EVENT</h3>
-            <input type="text" id="event-text" placeholder="e.g., Watched reels 30min">
+            <input type="text" id="event-text" placeholder="e.g., Watched reels 30min" autocomplete="off">
             
             <div class="value-pickers">
                 <div class="picker-group">
-                    <label class="hp-text">HP change:</label>
+                    <label class="hp-text">HP change</label>
                     <input type="number" id="event-hp" value="-5">
                 </div>
                 <div class="picker-group">
-                    <label class="mp-text">MP change:</label>
+                    <label class="mp-text">MP change</label>
                     <input type="number" id="event-mp" value="-15">
                 </div>
             </div>
@@ -62,7 +62,10 @@
 
         <!-- Combat / Activity Log -->
         <div class="log-panel">
-            <h3>BUFFS / DEBUFFS LOG</h3>
+            <div class="log-header">
+                <h3>BUFFS / DEBUFFS LOG</h3>
+                <button class="clear-btn" onclick="clearLog()">Clear Log</button>
+            </div>
             <div id="combat-log" class="combat-log-box">
                 <div class="log-entry system-msg">[System initialized. Have a productive day.]</div>
             </div>
