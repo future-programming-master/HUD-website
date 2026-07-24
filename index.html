@@ -8,70 +8,127 @@
 </head>
 <body>
 
-    <div class="game-container">
-        <!-- HUD Header -->
-        <div class="char-header">
-            <h2>REAL LIFE HUD</h2>
-            <div class="level-control">
-                <button class="lvl-btn" onclick="changeLevel(-1)">-</button>
-                <span class="level-tag">DAY <span id="level-value">1</span></span>
-                <button class="lvl-btn" onclick="changeLevel(1)">+</button>
-            </div>
-        </div>
-
-        <!-- HP (Energy) Section -->
-        <div class="stat-container">
-            <div class="stat-labels">
-                <span class="stat-name hp-text">ENERGY (HP)</span>
-                <span class="stat-values"><span id="hp-current">100</span> / 100</span>
-            </div>
-            <div class="bar-border">
-                <div id="hp-fill" class="bar-fill hp-bar" style="width: 100%;"></div>
-            </div>
-        </div>
-
-        <!-- MP (Time Left / Capacity) Section -->
-        <div class="stat-container">
-            <div class="stat-labels">
-                <span class="stat-name mp-text">TIME / WORK (MP)</span>
-                <span class="stat-values"><span id="mp-current">100</span> / 100</span>
-            </div>
-            <div class="bar-border">
-                <div id="mp-fill" class="bar-fill mp-bar" style="width: 100%;"></div>
-            </div>
-        </div>
-
-        <!-- Dynamic Action Logger Form -->
-        <div class="action-panel">
-            <h3>LOG NEW EVENT</h3>
-            <input type="text" id="event-text" placeholder="e.g., Watched reels 30min" autocomplete="off">
-            
-            <div class="value-pickers">
-                <div class="picker-group">
-                    <label class="hp-text">HP change</label>
-                    <input type="number" id="event-hp" value="-5">
-                </div>
-                <div class="picker-group">
-                    <label class="mp-text">MP change</label>
-                    <input type="number" id="event-mp" value="-15">
-                </div>
-            </div>
-            
-            <button id="submit-event-btn" onclick="applyLifeEvent()">EXECUTE ACTION</button>
-        </div>
-
-        <!-- Combat / Activity Log -->
-        <div class="log-panel">
-            <div class="log-header">
-                <h3>BUFFS / DEBUFFS LOG</h3>
-                <button class="clear-btn" onclick="clearLog()">Clear Log</button>
-            </div>
-            <div id="combat-log" class="combat-log-box">
-                <div class="log-entry system-msg">[System initialized. Have a productive day.]</div>
+    <!-- Morning Awakening Modal Overlay -->
+    <div id="awakening-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h2>☀️ DAILY AWAKENING</h2>
+            <p>A new day has dawned. Choose your sleep quality to determine today's resource baselines:</p>
+            <div class="modal-options">
+                <button class="modal-btn perfect" onclick="processAwakening('perfect')">
+                    <span class="btn-title">PERFECT REST</span>
+                    <span class="btn-desc">HP -> 100 | MP Max: 100</span>
+                </button>
+                <button class="modal-btn mediocre" onclick="processAwakening('mediocre')">
+                    <span class="btn-title">MEDIOCRE SLEEP</span>
+                    <span class="btn-desc">HP +25 | MP Max Caps at 70</span>
+                </button>
+                <button class="modal-btn trash" onclick="processAwakening('trash')">
+                    <span class="btn-title">TRASH SLEEP</span>
+                    <span class="btn-desc">HP -10 | MP Max Caps at 40</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <script src="./script.js"></script>
+    <!-- Main Game Container -->
+    <div class="game-container">
+        
+        <!-- Navigation Tabs Manager Dashboard -->
+        <div class="nav-tabs">
+            <button id="tab-hud" class="tab-btn active-tab" onclick="switchTab('hud')">HUD</button>
+            <button id="tab-stats" class="tab-btn" onclick="switchTab('stats')">STATS</button>
+            <button id="tab-quests" class="tab-btn" onclick="switchTab('quests')">QUESTS</button>
+        </div>
+
+        <!-- PANEL 1: HUD ENGINE PANEL -->
+        <div id="panel-hud" class="tab-panel">
+            <div class="char-header">
+                <h2>REAL LIFE HUD</h2>
+                <span id="date-display" class="date-tag">JULY 24</span>
+            </div>
+
+            <!-- HP (Energy Battery) Section -->
+            <div class="stat-container">
+                <div class="stat-labels">
+                    <span class="stat-name hp-text">ENERGY (HP)</span>
+                    <span class="stat-values"><span id="hp-current">100</span> / 100</span>
+                </div>
+                <div class="bar-border">
+                    <div id="hp-fill" class="bar-fill hp-bar" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- MP (Cognitive Focus Budget) Section -->
+            <div class="stat-container">
+                <div class="stat-labels">
+                    <span class="stat-name mp-text">FOCUS BUDGET (MP)</span>
+                    <span class="stat-values"><span id="mp-current">100</span> / <span id="mp-max-label">100</span></span>
+                </div>
+                <div class="bar-border">
+                    <div id="mp-fill" class="bar-fill mp-bar" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Dynamic Action Logger Form -->
+            <div class="action-panel">
+                <h3>LOG NEW EVENT</h3>
+                <input type="text" id="event-text" placeholder="e.g., Studied C++ pointers 1hr" autocomplete="off">
+                
+                <div class="value-pickers">
+                    <div class="picker-group">
+                        <label class="hp-text">HP change</label>
+                        <input type="number" id="event-hp" value="-5">
+                    </div>
+                    <div class="picker-group">
+                        <label class="mp-text">MP change</label>
+                        <input type="number" id="event-mp" value="-15">
+                    </div>
+                </div>
+                
+                <button id="submit-event-btn" onclick="applyLifeEvent()">EXECUTE ACTION</button>
+            </div>
+
+            <!-- Combat / Activity Log -->
+            <div class="log-panel">
+                <div class="log-header">
+                    <h3>BUFFS / DEBUFFS LOG</h3>
+                    <button class="clear-btn" onclick="clearLog()">Clear Log</button>
+                </div>
+                <div id="combat-log" class="combat-log-box">
+                    <div class="log-entry system-msg">[System initialized. Track your day.]</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: STATS CORE PANEL (Hidden Placeholder for Phase 2) -->
+        <div id="panel-stats" class="tab-panel hidden">
+            <div class="char-header">
+                <h2>ATTRIBUTES</h2>
+            </div>
+            <div class="placeholder-msg">
+                <p>⚔️ Core attributes module locked.</p>
+                <p>Fed by daily HUD logs:</p>
+                <ul style="text-align: left; margin: 15px auto; max-width: 250px; line-height: 1.6; color:#66fcf1;">
+                    <li>INTELLIGENCE (CompSci)</li>
+                    <li>CHARISMA (German lang)</li>
+                    <li>STRENGTH (Arm wrestling)</li>
+                    <li>DUTY (School / Admin)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PANEL 3: QUESTS PANEL (Hidden Placeholder for Phase 3) -->
+        <div id="panel-quests" class="tab-panel hidden">
+            <div class="char-header">
+                <h2>QUEST LOG</h2>
+            </div>
+            <div class="placeholder-msg">
+                <p>📜 Quest management and skill tree vectors loading in next iteration.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
