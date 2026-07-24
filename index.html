@@ -1,156 +1,639 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life RPG HUD</title>
 
-    <link rel="stylesheet" href="style.css">
-    <script defer src="script.js"></script>
+<head>
+
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>LifeHUD</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css">
+
+    <script
+        src="script.js"
+        defer></script>
+
 </head>
+
 <body>
 
-<header class="topbar">
+    <!-- ========================= -->
+    <!-- DAILY AWAKENING MODAL -->
+    <!-- ========================= -->
 
-    <nav class="tabs">
-        <button class="tab active" data-tab="hud">HUD</button>
-        <button class="tab" data-tab="stats">STATS</button>
-        <button class="tab" data-tab="quests">QUESTS</button>
-    </nav>
+    <div
+        id="awakeningOverlay"
+        class="overlay hidden">
 
-</header>
+        <div class="modal">
 
-<main>
+            <h1>☀ Daily Awakening</h1>
 
-    <!-- ================= HUD ================= -->
+            <p>
+                How well did you sleep?
+            </p>
 
-    <section id="hud" class="view active">
+            <button
+                class="sleepButton perfect"
+                data-sleep="perfect">
 
-        <div class="panel">
+                😴 Perfect Rest
 
-            <h2>Status</h2>
+                <small>
+                    HP → 100<br>
+                    MP → 100
+                </small>
 
-            <div class="bar-block">
-
-                <label>HP <span id="hpText"></span></label>
-
-                <div class="bar">
-                    <div id="hpBar" class="fill hp"></div>
-                </div>
-
-            </div>
-
-            <div class="bar-block">
-
-                <label>MP <span id="mpText"></span></label>
-
-                <div class="bar">
-                    <div id="mpBar" class="fill mp"></div>
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="panel">
-
-            <h2>Log Event</h2>
-
-            <form id="eventForm">
-
-                <input
-                    id="eventName"
-                    type="text"
-                    placeholder="Event name..."
-                    required
-                >
-
-                <select id="eventType">
-
-                    <option value="work">Work (-10 MP)</option>
-                    <option value="exercise">Exercise (+5 HP)</option>
-                    <option value="damage">Stress (-10 HP)</option>
-
-                </select>
-
-                <button type="submit">
-                    Log
-                </button>
-
-            </form>
-
-        </div>
-
-        <div class="panel">
-
-            <h2>Combat Log</h2>
-
-            <div id="combatLog" class="combat-log"></div>
-
-        </div>
-
-    </section>
-
-    <!-- ================= STATS ================= -->
-
-    <section id="stats" class="view">
-
-        <div class="panel">
-            <h2>Stats</h2>
-
-            <p>Current HP: <span id="statsHP"></span></p>
-            <p>Current MP: <span id="statsMP"></span></p>
-            <p>Max MP: <span id="statsMaxMP"></span></p>
-
-        </div>
-
-    </section>
-
-    <!-- ================= QUESTS ================= -->
-
-    <section id="quests" class="view">
-
-        <div class="panel">
-
-            <h2>Quests</h2>
-
-            <p>No quests yet.</p>
-
-        </div>
-
-    </section>
-
-</main>
-
-<!-- ================= MODAL ================= -->
-
-<div id="awakeningModal" class="modal hidden">
-
-    <div class="modal-card">
-
-        <h2>Daily Awakening</h2>
-
-        <p>How well did you sleep?</p>
-
-        <div class="modal-buttons">
-
-            <button data-sleep="100">
-                Perfect
             </button>
 
-            <button data-sleep="70">
-                Mediocre
+            <button
+                class="sleepButton mediocre"
+                data-sleep="mediocre">
+
+                🙂 Mediocre
+
+                <small>
+                    HP +25<br>
+                    MP Max 70
+                </small>
+
             </button>
 
-            <button data-sleep="40">
-                Trash
+            <button
+                class="sleepButton trash"
+                data-sleep="trash">
+
+                💀 Trash
+
+                <small>
+                    HP -10<br>
+                    MP Max 40
+                </small>
+
             </button>
 
         </div>
 
     </div>
 
-</div>
+    <!-- ========================= -->
+    <!-- TOP BAR -->
+    <!-- ========================= -->
+
+    <header>
+
+        <div class="logo">
+
+            LIFE // HUD
+
+        </div>
+
+        <nav>
+
+            <button
+                class="tab active"
+                data-tab="hud">
+
+                HUD
+
+            </button>
+
+            <button
+                class="tab"
+                data-tab="stats">
+
+                STATS
+
+            </button>
+
+            <button
+                class="tab"
+                data-tab="quests">
+
+                QUESTS
+
+            </button>
+
+        </nav>
+
+    </header>
+
+    <!-- ========================= -->
+    <!-- MAIN -->
+    <!-- ========================= -->
+
+    <main>
+
+        <!-- ================================= -->
+        <!-- HUD -->
+        <!-- ================================= -->
+
+        <section
+            id="hud"
+            class="page">
+
+            <!-- Character -->
+
+            <div class="card">
+
+                <div class="characterHeader">
+
+                    <h2>
+
+                        Level
+                        <span id="playerLevel">
+
+                            1
+
+                        </span>
+
+                    </h2>
+
+                    <span id="playerXP">
+
+                        0 XP
+
+                    </span>
+
+                </div>
+
+                <!-- HP -->
+
+                <div class="resource">
+
+                    <div class="resourceTitle">
+
+                        ❤️ HP
+
+                        <span id="hpLabel">
+
+                            100 / 100
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar">
+
+                        <div
+                            id="hpBar"
+                            class="fill hp">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- MP -->
+
+                <div class="resource">
+
+                    <div class="resourceTitle">
+
+                        🔷 MP
+
+                        <span id="mpLabel">
+
+                            100 / 100
+
+                        </span>
+
+                    </div>
+
+                    <div class="bar">
+
+                        <div
+                            id="mpBar"
+                            class="fill mp">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Attributes -->
+
+            <div class="card">
+
+                <h2>
+
+                    Attributes
+
+                </h2>
+
+                <div class="statsGrid">
+
+                    <div class="statCard">
+
+                        <h3>🧠 INT</h3>
+
+                        <span
+                            id="intLevel">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                    <div class="statCard">
+
+                        <h3>🗣 CHA</h3>
+
+                        <span
+                            id="chaLevel">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                    <div class="statCard">
+
+                        <h3>💪 STR</h3>
+
+                        <span
+                            id="strLevel">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                    <div class="statCard">
+
+                        <h3>📚 DTY</h3>
+
+                        <span
+                            id="dtyLevel">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Activity -->
+
+            <div class="card">
+
+                <h2>
+
+                    Execute Activity
+
+                </h2>
+
+                <form id="activityForm">
+
+                    <label>
+
+                        Activity
+
+                    </label>
+
+                    <input
+                        id="activityName"
+                        type="text"
+                        placeholder="Study Algorithms..."
+                        required>
+
+                    <div class="doubleInput">
+
+                        <div>
+
+                            <label>
+
+                                HP Δ
+
+                            </label>
+
+                            <input
+                                id="hpChange"
+                                type="number"
+                                value="0">
+
+                        </div>
+
+                        <div>
+
+                            <label>
+
+                                MP Δ
+
+                            </label>
+
+                            <input
+                                id="mpChange"
+                                type="number"
+                                value="0">
+
+                        </div>
+
+                    </div>
+
+                    <div class="doubleInput">
+
+                        <div>
+
+                            <label>
+
+                                Attribute
+
+                            </label>
+
+                            <select
+                                id="attribute">
+
+                                <option value="int">
+
+                                    INT
+
+                                </option>
+
+                                <option value="cha">
+
+                                    CHA
+
+                                </option>
+
+                                <option value="str">
+
+                                    STR
+
+                                </option>
+
+                                <option value="dty">
+
+                                    DTY
+
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div>
+
+                            <label>
+
+                                EXP
+
+                            </label>
+
+                            <input
+                                id="expGain"
+                                type="number"
+                                value="10">
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        id="executeButton"
+                        type="submit">
+
+                        ▶ EXECUTE ACTION
+
+                    </button>
+
+                </form>
+
+            </div>
+
+            <!-- Combat Log -->
+
+            <div class="card">
+
+                <h2>
+
+                    Combat Log
+
+                </h2>
+
+                <div
+                    id="combatLog"
+                    class="combatLog">
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ================================= -->
+        <!-- STATS -->
+        <!-- ================================= -->
+
+        <section
+            id="stats"
+            class="page hidden">
+
+            <div class="card">
+
+                <h2>
+
+                    Character Overview
+
+                </h2>
+
+                <div class="overviewGrid">
+
+                    <div>
+
+                        Total Level
+
+                        <strong
+                            id="overviewLevel">
+
+                            1
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        Total XP
+
+                        <strong
+                            id="overviewXP">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        Lifetime Activities
+
+                        <strong
+                            id="activityCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                    <div>
+
+                        Today's MP Used
+
+                        <strong
+                            id="todayMP">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h2>
+
+                    Core Attributes
+
+                </h2>
+
+                <div class="attributeList">
+
+                    <div>
+
+                        INT
+
+                        <span id="statINT">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        CHA
+
+                        <span id="statCHA">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        STR
+
+                        <span id="statSTR">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        DTY
+
+                        <span id="statDTY">
+
+                            Lv.1
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ================================= -->
+        <!-- QUESTS -->
+        <!-- ================================= -->
+
+        <section
+            id="quests"
+            class="page hidden">
+
+            <div class="card">
+
+                <h2>
+
+                    Daily Quests
+
+                </h2>
+
+                <p>
+
+                    Coming in Version 2.1
+
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <h2>
+
+                    Weekly Quests
+
+                </h2>
+
+                <p>
+
+                    Coming in Version 2.1
+
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <h2>
+
+                    Main Story
+
+                </h2>
+
+                <p>
+
+                    Become the strongest version of yourself.
+
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
 
 </body>
+
 </html>
