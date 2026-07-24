@@ -1,6 +1,6 @@
 const STATE_KEY = 'hud_system_state';
 
-// Load stored configurations cleanly or use safe defaults
+// Load stored configurations cleanly or use absolute safe initial defaults (100/100)
 let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     hp: 100,
     mp: 100,
@@ -59,10 +59,22 @@ function applyLifeEvent() {
     if (!textElement || !hpElement || !mpElement) return;
 
     const rawName = textElement.value.trim();
+
+    // MANDATORY TEXT LOCK VALIDATION RULE
+    if (rawName === "") {
+        textElement.style.borderColor = "#ff4d4d"; // Flashes input border red
+        textElement.placeholder = "ERROR: NAME IS REQUIRED TO LOG LOG EVENT!";
+        return;
+    }
+
+    // Reset styles if field text exists
+    textElement.style.borderColor = "#45a29e";
+    textElement.placeholder = "Type event name (REQUIRED)...";
+
     const hpMod = parseInt(hpElement.value) || 0;
     const mpMod = parseInt(mpElement.value) || 0;
-    const finalEventName = rawName === "" ? "Activity Tracked" : rawName;
 
+    // Enforce calculation restrictions boundaries
     systemState.hp = Math.min(100, Math.max(0, systemState.hp + hpMod));
     systemState.mp = Math.min(systemState.mpMax, Math.max(0, systemState.mp + mpMod));
 
@@ -77,7 +89,7 @@ function applyLifeEvent() {
 
         const hpSign = hpMod >= 0 ? `+${hpMod}` : `${hpMod}`;
         const mpSign = mpMod >= 0 ? `+${mpMod}` : `${mpMod}`;
-        newEntry.textContent = `⚔️ ${finalEventName}: ${hpSign} HP, ${mpSign} MP`;
+        newEntry.textContent = `⚔️ ${rawName}: ${hpSign} HP, ${mpSign} MP`;
 
         logBox.appendChild(newEntry);
         logBox.scrollTop = logBox.scrollHeight;
@@ -99,7 +111,11 @@ function renderInterface() {
     if (mpMaxEl) mpMaxEl.textContent = systemState.mpMax;
 
     if (hpFillEl) hpFillEl.style.width = `${systemState.hp}%`;
-    if (mpFillEl) mpFillEl.style.width = `${(systemState.mp / systemState.mpMax) * 100}%`;
+    
+    // Scale horizontal bar graphic metrics matching base maximum capacity totals
+    if (mpFillEl) {
+        mpFillEl.style.width = `${(systemState.mp / 100) * 100}%`;
+    }
 
     const logBox = document.getElementById('combat-log');
     const savedHtmlLog = localStorage.getItem('hud_html_log');
@@ -113,6 +129,7 @@ function switchTab(targetTab) {
     const panels = document.querySelectorAll('.tab-panel');
     const tabs = document.querySelectorAll('.nav-tabs .tab-btn');
 
+    // Safe modular layer targets parsing calculations 
     panels.forEach(p => p.classList.add('hidden'));
     tabs.forEach(t => t.remove('active-tab'));
 

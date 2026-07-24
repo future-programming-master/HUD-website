@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Life HUD</title>
-    <link rel="stylesheet" href="./style.css?v=5">
+    <link rel="stylesheet" href="./style.css?v=6">
 </head>
 <body>
 
@@ -33,7 +33,7 @@
     <!-- Main Game Container -->
     <div class="game-container">
         
-        <!-- Navigation Tabs Manager Dashboard -->
+        <!-- FIXED NAVIGATION BAR - Stays visible permanently at the top -->
         <div class="nav-tabs">
             <button id="tab-hud" class="tab-btn active-tab" onclick="switchTab('hud')">HUD</button>
             <button id="tab-stats" class="tab-btn" onclick="switchTab('stats')">STATS</button>
@@ -72,7 +72,7 @@
             <!-- Dynamic Action Logger Form -->
             <div class="action-panel">
                 <h3>LOG NEW EVENT</h3>
-                <input type="text" id="event-text" placeholder="e.g., Studied C++ pointers 1hr" autocomplete="off">
+                <input type="text" id="event-text" placeholder="Type event name (REQUIRED)..." autocomplete="off">
                 
                 <div class="value-pickers">
                     <div class="picker-group">
@@ -128,8 +128,7 @@
         </div>
     </div>
 
-    <!-- Clean, safe separate file link path -->
-    <script src="./script.js?v=5"></script>
+    <script src="./script.js?v=6"></script>
 </body>
 </html>
 
