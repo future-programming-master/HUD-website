@@ -1,6 +1,6 @@
 const STATE_KEY = 'hud_system_state';
 
-// Load stored configurations cleanly or use absolute safe initial defaults (100/100)
+// Global state container initialization
 let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     hp: 100,
     mp: 100,
@@ -8,45 +8,35 @@ let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     lastSavedDate: ""
 };
 
-// Defensive checks to prevent any corruption freezing the interface
 if (!systemState.mpMax || systemState.mpMax <= 0) systemState.mpMax = 100;
 if (systemState.hp === undefined) systemState.hp = 100;
 if (systemState.mp === undefined) systemState.mp = 100;
 
-document.addEventListener("DOMContentLoaded", () => {
-    const todayStr = getTodayDateString();
-    const dateDisplay = document.getElementById('date-display');
-    if (dateDisplay) {
-        dateDisplay.textContent = todayStr;
-    }
+// SAFE BOOT SYSTEM: Binds functions globally to the browser window immediately
+window.switchTab = function(targetTab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.nav-tabs .tab-btn').forEach(t => t.remove('active-tab'));
+    
+    const panel = document.getElementById(`panel-${targetTab}`);
+    const tabBtn = document.getElementById(`tab-${targetTab}`);
+    
+    if (panel) panel.classList.remove('hidden');
+    if (tabBtn) tabBtn.classList.add('active-tab');
+};
 
-    const modal = document.getElementById('awakening-modal');
-    if (systemState.lastSavedDate !== todayStr && modal) {
-        modal.classList.remove('hidden');
-    } else {
-        renderInterface();
-    }
-});
-
-function processAwakening(choice) {
+window.processAwakening = function(choice) {
     const todayStr = getTodayDateString();
     systemState.lastSavedDate = todayStr;
 
     if (choice === 'perfect') {
-        systemState.hp = 100;
-        systemState.mpMax = 100;
-        systemState.mp = 100;
-        appendLogToSystem("[Awakening: Perfect Rest logged. HP restored to 100, MP Max sets to 100.]");
+        systemState.hp = 100; systemState.mpMax = 100; systemState.mp = 100;
+        appendLogToSystem("[Awakening: Perfect Rest logged.]");
     } else if (choice === 'mediocre') {
-        systemState.hp = Math.min(100, systemState.hp + 25);
-        systemState.mpMax = 70;
-        systemState.mp = 70;
-        appendLogToSystem("[Awakening: Mediocre Sleep logged. HP +25, MP Max capped at 70.]");
+        systemState.hp = Math.min(100, systemState.hp + 25); systemState.mpMax = 70; systemState.mp = 70;
+        appendLogToSystem("[Awakening: Mediocre Sleep logged.]");
     } else if (choice === 'trash') {
-        systemState.hp = Math.max(0, systemState.hp - 10);
-        systemState.mpMax = 40;
-        systemState.mp = 40;
-        appendLogToSystem("[Awakening: Trash Sleep logged. HP -10, MP Max capped at 40.]");
+        systemState.hp = Math.max(0, systemState.hp - 10); systemState.mpMax = 40; systemState.mp = 40;
+        appendLogToSystem("[Awakening: Trash Sleep logged.]");
     }
 
     const modal = document.getElementById('awakening-modal');
@@ -54,18 +44,16 @@ function processAwakening(choice) {
     
     saveStateToStorage();
     renderInterface();
-}
+};
 
-function applyLifeEvent() {
+window.applyLifeEvent = function() {
     const textElement = document.getElementById('event-text');
     const hpElement = document.getElementById('event-hp');
     const mpElement = document.getElementById('event-mp');
 
     if (!textElement || !hpElement || !mpElement) return;
-
     const rawName = textElement.value.trim();
 
-    // MANDATORY TEXT LOCK VALIDATION RULE
     if (rawName === "") {
         textElement.style.borderColor = "#ff4d4d"; 
         textElement.placeholder = "ERROR: NAME IS REQUIRED TO LOG EVENT!";
@@ -87,20 +75,21 @@ function applyLifeEvent() {
     const logBox = document.getElementById('combat-log');
     if (logBox) {
         const newEntry = document.createElement('div');
-        const styleIndicator = (hpMod < 0 || mpMod < 0) ? 'loss-msg' : 'gain-msg';
-        newEntry.className = `log-entry ${styleIndicator}`;
-
-        const hpSign = hpMod >= 0 ? `+${hpMod}` : `${hpMod}`;
-        const mpSign = mpMod >= 0 ? `+${mpMod}` : `${mpMod}`;
-        newEntry.textContent = `⚔️ ${rawName}: ${hpSign} HP, ${mpSign} MP`;
-
+        newEntry.className = `log-entry ${(hpMod < 0 || mpMod < 0) ? 'loss-msg' : 'gain-msg'}`;
+        newEntry.textContent = `⚔️ ${rawName}: ${hpMod >= 0 ? '+' : ''}${hpMod} HP, ${mpMod >= 0 ? '+' : ''}${mpMod} MP`;
         logBox.appendChild(newEntry);
         logBox.scrollTop = logBox.scrollHeight;
         localStorage.setItem('hud_html_log', logBox.innerHTML);
     }
     
     textElement.value = "";
-}
+};
+
+window.clearLog = function() {
+    const logBox = document.getElementById('combat-log');
+    if (logBox) logBox.innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
+    localStorage.removeItem('hud_html_log');
+};
 
 function renderInterface() {
     const hpCurrentEl = document.getElementById('hp-current');
@@ -124,23 +113,8 @@ function renderInterface() {
     }
 }
 
-function switchTab(targetTab) {
-    const panels = document.querySelectorAll('.tab-panel');
-    const tabs = document.querySelectorAll('.nav-tabs .tab-btn');
-
-    panels.forEach(p => p.classList.add('hidden'));
-    tabs.forEach(t => t.remove('active-tab'));
-
-    const targetPanel = document.getElementById(`panel-${targetTab}`);
-    const targetTabBtn = document.getElementById(`tab-${targetTab}`);
-    
-    if (targetPanel) targetPanel.classList.remove('hidden');
-    if (targetTabBtn) targetTabBtn.classList.add('active-tab');
-}
-
 function getTodayDateString() {
-    const options = { month: 'long', day: 'numeric' };
-    return new Date().toLocaleDateString('en-US', options).toUpperCase();
+    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
 }
 
 function appendLogToSystem(message) {
@@ -158,12 +132,18 @@ function saveStateToStorage() {
     localStorage.setItem(STATE_KEY, JSON.stringify(systemState));
 }
 
-function clearLog() {
-    const logBox = document.getElementById('combat-log');
-    if (logBox) {
-        logBox.innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
+// Global initialization listener
+document.addEventListener("DOMContentLoaded", () => {
+    const todayStr = getTodayDateString();
+    const dateDisplay = document.getElementById('date-display');
+    if (dateDisplay) dateDisplay.textContent = todayStr;
+
+    const modal = document.getElementById('awakening-modal');
+    if (systemState.lastSavedDate !== todayStr && modal) {
+        modal.classList.remove('hidden');
+    } else {
+        renderInterface();
     }
-    localStorage.removeItem('hud_html_log');
-}
+});
 
 
