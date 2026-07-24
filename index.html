@@ -3,147 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Life HUD</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; font-weight: bold; }
-        body { background: #0b0c10; color: #c5c6c7; display: flex; justify-content: center; padding: 15px; min-height: 100vh; }
-        .game-container { width: 100%; max-width: 460px; background: #1f2833; padding: 20px; border-radius: 12px; border: 3px solid #45a29e; box-shadow: 0 0 20px rgba(69,162,158,0.3); margin-top: 20px; height: fit-content; }
-        .nav-tabs { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #0b0c10; padding-bottom: 10px; }
-        .tab-btn { flex: 1; background: #0b0c10; color: #45a29e; border: 1px solid #45a29e; padding: 10px; cursor: pointer; font-size: 13px; border-radius: 4px; }
-        .tab-btn:hover { color: #66fcf1; border-color: #66fcf1; }
-        .active-tab { background: #45a29e; color: #0b0c10 !important; border-color: #45a29e; }
-        .char-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px dashed #45a29e; padding-bottom: 15px; }
-        .char-header h2 { color: #66fcf1; letter-spacing: 1px; font-size: 20px; }
-        .date-tag { background: #45a29e; color: #0b0c10; padding: 6px 12px; border-radius: 4px; font-size: 13px; }
-        .stat-container { margin-bottom: 20px; }
-        .stat-labels { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
-        .hp-text { color: #ff4d4d; }
-        .mp-text { color: #00ffff; }
-        .bar-border { width: 100%; height: 26px; background: #0b0c10; border: 2px solid #c5c6c7; border-radius: 6px; overflow: hidden; padding: 2px; }
-        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease-out; }
-        .hp-bar { background: linear-gradient(90deg, #990000, #ff4d4d); box-shadow: 0 0 8px rgba(255,77,77,0.6); }
-        .mp-bar { background: linear-gradient(90deg, #0088cc, #00ffff); box-shadow: 0 0 8px rgba(0,255,255,0.6); }
-        .action-panel { background: #0b0c10; border: 2px solid #45a29e; border-radius: 8px; padding: 15px; margin-top: 25px; }
-        .action-panel h3, .log-header h3 { font-size: 13px; color: #66fcf1; margin-bottom: 12px; }
-        #event-text { width: 100%; background: #1f2833; border: 2px solid #45a29e; color: #fff; padding: 12px; border-radius: 6px; font-size: 15px; margin-bottom: 15px; outline: none; }
-        .value-pickers { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
-        .picker-group { display: flex; flex-direction: column; width: 48%; gap: 6px; }
-        .picker-group label { font-size: 11px; }
-        .picker-group input { background: #1f2833; border: 1px solid #45a29e; color: #fff; padding: 10px; text-align: center; border-radius: 4px; font-size: 16px; }
-        #submit-event-btn { width: 100%; background: #45a29e; color: #0b0c10; border: none; padding: 14px; font-size: 14px; border-radius: 6px; cursor: pointer; }
-        .log-panel { margin-top: 25px; }
-        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .clear-btn { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; font-size: 11px; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
-        .combat-log-box { background: #0b0c10; border: 2px solid #1f2833; border-radius: 8px; height: 150px; overflow-y: auto; padding: 12px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
-        .log-entry { line-height: 1.4; padding-bottom: 4px; border-bottom: 1px dashed #1f2833; word-break: break-word; }
-        .system-msg { color: #888; }
-        .gain-msg { color: #2ecc71; }
-        .loss-msg { color: #e74c3c; }
-        .tab-panel { width: 100%; }
-        .hidden { display: none !important; }
-        .placeholder-msg { text-align: center; padding: 40px 10px; color: #888; line-height: 1.6; font-size: 14px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,12,16,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .modal-box { background: #1f2833; border: 3px solid #45a29e; width: 100%; max-width: 420px; padding: 30px 20px; border-radius: 12px; text-align: center; box-shadow: 0 0 25px rgba(102,252,241,0.2); }
-        .modal-box h2 { color: #66fcf1; margin-bottom: 15px; font-size: 22px; }
-        .modal-box p { font-size: 14px; color: #c5c6c7; margin-bottom: 25px; line-height: 1.5; }
-        .modal-options { display: flex; flex-direction: column; gap: 15px; }
-        .modal-btn { display: flex; flex-direction: column; padding: 15px; border-radius: 8px; cursor: pointer; background: #0b0c10; text-align: left; width: 100%; }
-        .btn-title { font-size: 15px; margin-bottom: 4px; }
-        .btn-desc { font-size: 12px; color: #888; }
-        .perfect { border: 2px solid #2ecc71; } .perfect .btn-title { color: #2ecc71; }
-        .mediocre { border: 2px solid #f1c40f; } .mediocre .btn-title { color: #f1c40f; }
-        .trash { border: 2px solid #e74c3c; } .trash .btn-title { color: #e74c3c; }
-    </style>
+    <title>Life RPG HUD</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
 </head>
 <body>
 
-    <div id="awakening-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h2>☀️ DAILY AWAKENING</h2>
-            <p>Choose sleep quality to determine today's resource baselines:</p>
-            <div class="modal-options">
-                <button id="btn-perfect" class="modal-btn perfect">
-                    <span class="btn-title">PERFECT REST</span>
-                    <span class="btn-desc">HP -> 100 | MP Max: 100</span>
-                </button>
-                <button id="btn-mediocre" class="modal-btn mediocre">
-                    <span class="btn-title">MEDIOCRE SLEEP</span>
-                    <span class="btn-desc">HP +25 | MP Max Caps at 70</span>
-                </button>
-                <button id="btn-trash" class="modal-btn trash">
-                    <span class="btn-title">TRASH SLEEP</span>
-                    <span class="btn-desc">HP -10 | MP Max Caps at 40</span>
-                </button>
+<header class="topbar">
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="hud">HUD</button>
+        <button class="tab" data-tab="stats">STATS</button>
+        <button class="tab" data-tab="quests">QUESTS</button>
+    </nav>
+
+</header>
+
+<main>
+
+    <!-- ================= HUD ================= -->
+
+    <section id="hud" class="view active">
+
+        <div class="panel">
+
+            <h2>Status</h2>
+
+            <div class="bar-block">
+
+                <label>HP <span id="hpText"></span></label>
+
+                <div class="bar">
+                    <div id="hpBar" class="fill hp"></div>
+                </div>
+
             </div>
+
+            <div class="bar-block">
+
+                <label>MP <span id="mpText"></span></label>
+
+                <div class="bar">
+                    <div id="mpBar" class="fill mp"></div>
+                </div>
+
+            </div>
+
         </div>
+
+        <div class="panel">
+
+            <h2>Log Event</h2>
+
+            <form id="eventForm">
+
+                <input
+                    id="eventName"
+                    type="text"
+                    placeholder="Event name..."
+                    required
+                >
+
+                <select id="eventType">
+
+                    <option value="work">Work (-10 MP)</option>
+                    <option value="exercise">Exercise (+5 HP)</option>
+                    <option value="damage">Stress (-10 HP)</option>
+
+                </select>
+
+                <button type="submit">
+                    Log
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="panel">
+
+            <h2>Combat Log</h2>
+
+            <div id="combatLog" class="combat-log"></div>
+
+        </div>
+
+    </section>
+
+    <!-- ================= STATS ================= -->
+
+    <section id="stats" class="view">
+
+        <div class="panel">
+            <h2>Stats</h2>
+
+            <p>Current HP: <span id="statsHP"></span></p>
+            <p>Current MP: <span id="statsMP"></span></p>
+            <p>Max MP: <span id="statsMaxMP"></span></p>
+
+        </div>
+
+    </section>
+
+    <!-- ================= QUESTS ================= -->
+
+    <section id="quests" class="view">
+
+        <div class="panel">
+
+            <h2>Quests</h2>
+
+            <p>No quests yet.</p>
+
+        </div>
+
+    </section>
+
+</main>
+
+<!-- ================= MODAL ================= -->
+
+<div id="awakeningModal" class="modal hidden">
+
+    <div class="modal-card">
+
+        <h2>Daily Awakening</h2>
+
+        <p>How well did you sleep?</p>
+
+        <div class="modal-buttons">
+
+            <button data-sleep="100">
+                Perfect
+            </button>
+
+            <button data-sleep="70">
+                Mediocre
+            </button>
+
+            <button data-sleep="40">
+                Trash
+            </button>
+
+        </div>
+
     </div>
 
-    <div class="game-container">
-        <!-- Clean HTML: No inline 'onclick' links -->
-        <div class="nav-tabs">
-            <button id="tab-hud" class="tab-btn active-tab">HUD</button>
-            <button id="tab-stats" class="tab-btn">STATS</button>
-            <button id="tab-quests" class="tab-btn">QUESTS</button>
-        </div>
+</div>
 
-        <div id="panel-hud" class="tab-panel">
-            <div class="char-header">
-                <h2>REAL LIFE HUD</h2>
-                <span id="date-display" class="date-tag">LOADING...</span>
-            </div>
-            <div class="stat-container">
-                <div class="stat-labels">
-                    <span class="stat-name hp-text">ENERGY (HP)</span>
-                    <span class="stat-values"><span id="hp-current">100</span> / 100</span>
-                </div>
-                <div class="bar-border"><div id="hp-fill" class="bar-fill hp-bar" style="width: 100%;"></div></div>
-            </div>
-            <div class="stat-container">
-                <div class="stat-labels">
-                    <span class="stat-name mp-text">FOCUS BUDGET (MP)</span>
-                    <span class="stat-values"><span id="mp-current">100</span> / <span id="mp-max-label">100</span></span>
-                </div>
-                <div class="bar-border"><div id="mp-fill" class="bar-fill mp-bar" style="width: 100%;"></div></div>
-            </div>
-            <div class="action-panel">
-                <h3>LOG NEW EVENT</h3>
-                <label for="event-text" class="hidden">Event Name</label>
-                <input type="text" id="event-text" placeholder="Type event name (REQUIRED)..." autocomplete="off">
-                <div class="value-pickers">
-                    <div class="picker-group">
-                        <label for="event-hp" class="hp-text">HP change</label>
-                        <input type="number" id="event-hp" value="-5">
-                    </div>
-                    <div class="picker-group">
-                        <label for="event-mp" class="mp-text">MP change</label>
-                        <input type="number" id="event-mp" value="-15">
-                    </div>
-                </div>
-                <button id="submit-event-btn">EXECUTE ACTION</button>
-            </div>
-            <div class="log-panel">
-                <div class="log-header"><h3>BUFFS / DEBUFFS LOG</h3><button id="clear-log-btn" class="clear-btn">Clear Log</button></div>
-                <div id="combat-log" class="combat-log-box"><div class="log-entry system-msg">[System initialized. Track your day.]</div></div>
-            </div>
-        </div>
-
-        <div id="panel-stats" class="tab-panel hidden">
-            <div class="char-header"><h2>ATTRIBUTES</h2></div>
-            <div class="placeholder-msg">
-                <p>⚔️ Core attributes module locked.</p>
-                <ul style="text-align: left; margin: 15px auto; max-width: 250px; line-height: 1.6; color:#66fcf1;">
-                    <li>INTELLIGENCE (CompSci)</li>
-                    <li>CHARISMA (German lang)</li>
-                    <li>STRENGTH (Arm wrestling)</li>
-                    <li>DUTY (School / Admin)</li>
-                </ul>
-            </div>
-        </div>
-
-        <div id="panel-quests" class="tab-panel hidden">
-            <div class="char-header"><h2>QUEST LOG</h2></div>
-            <div class="placeholder-msg"><p>📜 Quest management and skill tree vectors loading in next iteration.</p></div>
-        </div>
-    </div>
-
-    <!-- Clean, safe separate file link path -->
+</body>
+</html>

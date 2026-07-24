@@ -1,122 +1,168 @@
-const STATE_KEY = 'hud_system_state';
-let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || { hp: 100, mp: 100, mpMax: 100, lastSavedDate: "" };
+const STORAGE_KEY = "lifeRPG";
 
-if (!systemState.mpMax || systemState.mpMax <= 0) systemState.mpMax = 100;
-if (systemState.hp === undefined) systemState.hp = 100;
-if (systemState.mp === undefined) systemState.mp = 100;
+const today = new Date().toISOString().split("T")[0];
 
-// Safe Event Listener Setup — Zero security policies violations
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Setup Date
-    const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
-    if (document.getElementById('date-display')) document.getElementById('date-display').textContent = todayStr;
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
 
-    // 2. Setup Navigation Tab Clicks
-    document.getElementById('tab-hud').addEventListener('click', () => switchTab('hud'));
-    document.getElementById('tab-stats').addEventListener('click', () => switchTab('stats'));
-    document.getElementById('tab-quests').addEventListener('click', () => switchTab('quests'));
+    hp: 100,
 
-    // 3. Setup Action Form Click
-    document.getElementById('submit-event-btn').addEventListener('click', applyLifeEvent);
-    document.getElementById('clear-log-btn').addEventListener('click', clearLog);
+    mp: 100,
 
-    // 4. Setup Modal Buttons Clicks
-    document.getElementById('btn-perfect').addEventListener('click', () => processAwakening('perfect'));
-    document.getElementById('btn-mediocre').addEventListener('click', () => processAwakening('mediocre'));
-    document.getElementById('btn-trash').addEventListener('click', () => processAwakening('trash'));
+    maxMP: 100,
 
-    // 5. Initialize Display or show overlay popup
-    const modal = document.getElementById('awakening-modal');
-    if (systemState.lastSavedDate !== todayStr && modal) {
-        modal.classList.remove('hidden');
-    } else {
-        renderInterface();
-    }
+    lastBoot: ""
+
+};
+
+const hpBar = document.getElementById("hpBar");
+const mpBar = document.getElementById("mpBar");
+
+const hpText = document.getElementById("hpText");
+const mpText = document.getElementById("mpText");
+
+const statsHP = document.getElementById("statsHP");
+const statsMP = document.getElementById("statsMP");
+const statsMaxMP = document.getElementById("statsMaxMP");
+
+const combatLog = document.getElementById("combatLog");
+
+const modal = document.getElementById("awakeningModal");
+
+function save(){
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+}
+
+function clamp(){
+
+    state.hp=Math.max(0,Math.min(100,state.hp));
+
+    state.mp=Math.max(0,Math.min(state.maxMP,state.mp));
+
+}
+
+function updateBars(){
+
+    clamp();
+
+    hpBar.style.width = state.hp + "%";
+
+    mpBar.style.width = (state.mp/state.maxMP*100)+"%";
+
+    hpText.textContent=`${state.hp}/100`;
+
+    mpText.textContent=`${state.mp}/${state.maxMP}`;
+
+    statsHP.textContent=state.hp;
+
+    statsMP.textContent=state.mp;
+
+    statsMaxMP.textContent=state.maxMP;
+
+    save();
+
+}
+
+function log(text){
+
+    const line=document.createElement("div");
+
+    const time=new Date().toLocaleTimeString();
+
+    line.textContent=`[${time}] ${text}`;
+
+    combatLog.prepend(line);
+
+}
+
+if(state.lastBoot!==today){
+
+    modal.classList.remove("hidden");
+
+}
+
+modal.querySelectorAll("button").forEach(button=>{
+
+    button.addEventListener("click",()=>{
+
+        state.maxMP=Number(button.dataset.sleep);
+
+        state.mp=state.maxMP;
+
+        state.lastBoot=today;
+
+        modal.classList.add("hidden");
+
+        updateBars();
+
+        log(`Daily Awakening complete. Max MP set to ${state.maxMP}.`);
+
+    });
+
 });
 
-function switchTab(targetTab) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-    document.querySelectorAll('.nav-tabs .tab-btn').forEach(t => t.remove('active-tab'));
-    if (document.getElementById(`panel-${targetTab}`)) document.getElementById(`panel-${targetTab}`).classList.remove('hidden');
-    if (document.getElementById(`tab-${targetTab}`)) document.getElementById(`tab-${targetTab}`).classList.add('active-tab');
-}
+document.querySelectorAll(".tab").forEach(button=>{
 
-function processAwakening(choice) {
-    systemState.lastSavedDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
-    if (choice === 'perfect') {
-        systemState.hp = 100; systemState.mpMax = 100; systemState.mp = 100;
-        appendLogToSystem("[Awakening: Perfect Rest logged.]");
-    } else if (choice === 'mediocre') {
-        systemState.hp = Math.min(100, systemState.hp + 25); systemState.mpMax = 70; systemState.mp = 70;
-        appendLogToSystem("[Awakening: Mediocre Sleep logged.]");
-    } else if (choice === 'trash') {
-        systemState.hp = Math.max(0, systemState.hp - 10); systemState.mpMax = 40; systemState.mp = 40;
-        appendLogToSystem("[Awakening: Trash Sleep logged.]");
-    }
-    document.getElementById('awakening-modal').classList.add('hidden');
-    localStorage.setItem(STATE_KEY, JSON.stringify(systemState));
-    renderInterface();
-}
+    button.addEventListener("click",()=>{
 
-function applyLifeEvent() {
-    const textElement = document.getElementById('event-text');
-    const hpElement = document.getElementById('event-hp');
-    const mpElement = document.getElementById('event-mp');
-    const rawName = textElement.value.trim();
+        document.querySelectorAll(".tab")
+            .forEach(tab=>tab.classList.remove("active"));
 
-    if (rawName === "") {
-        textElement.style.borderColor = "#ff4d4d";
-        textElement.placeholder = "NAME REQUIRED!";
+        button.classList.add("active");
+
+        document.querySelectorAll(".view")
+            .forEach(view=>view.classList.remove("active"));
+
+        document
+            .getElementById(button.dataset.tab)
+            .classList.add("active");
+
+    });
+
+});
+
+document
+.getElementById("eventForm")
+.addEventListener("submit",(event)=>{
+
+    event.preventDefault();
+
+    const input=document.getElementById("eventName");
+
+    const name=input.value.trim();
+
+    if(!name){
+
         return;
+
     }
 
-    textElement.style.borderColor = "#45a29e";
-    textElement.placeholder = "Type event name (REQUIRED)...";
-    const hpMod = parseInt(hpElement.value) || 0;
-    const mpMod = parseInt(mpElement.value) || 0;
+    const type=document.getElementById("eventType").value;
 
-    systemState.hp = Math.min(100, Math.max(0, systemState.hp + hpMod));
-    systemState.mp = Math.min(systemState.mpMax, Math.max(0, systemState.mp + mpMod));
+    switch(type){
 
-    localStorage.setItem(STATE_KEY, JSON.stringify(systemState));
-    renderInterface();
+        case "work":
+            state.mp-=10;
+            log(`${name}: used 10 MP.`);
+            break;
 
-    const logBox = document.getElementById('combat-log');
-    if (logBox) {
-        const newEntry = document.createElement('div');
-        newEntry.className = `log-entry ${(hpMod < 0 || mpMod < 0) ? 'loss-msg' : 'gain-msg'}`;
-        newEntry.textContent = `⚔️ ${rawName}: ${hpMod >= 0 ? '+' : ''}${hpMod} HP, ${mpMod >= 0 ? '+' : ''}${mpMod} MP`;
-        logBox.appendChild(newEntry);
-        logBox.scrollTop = logBox.scrollHeight;
-        localStorage.setItem('hud_html_log', logBox.innerHTML);
+        case "exercise":
+            state.hp+=5;
+            log(`${name}: gained 5 HP.`);
+            break;
+
+        case "damage":
+            state.hp-=10;
+            log(`${name}: lost 10 HP.`);
+            break;
+
     }
-    textElement.value = "";
-}
 
-function renderInterface() {
-    document.getElementById('hp-current').textContent = systemState.hp;
-    document.getElementById('mp-current').textContent = systemState.mp;
-    document.getElementById('mp-max-label').textContent = systemState.mpMax;
-    document.getElementById('hp-fill').style.width = `${systemState.hp}%`;
-    document.getElementById('mp-fill').style.width = `${(systemState.mp / systemState.mpMax) * 100}%`;
-    
-    const logBox = document.getElementById('combat-log');
-    const savedHtmlLog = localStorage.getItem('hud_html_log');
-    if (logBox && savedHtmlLog) {
-        logBox.innerHTML = savedHtmlLog;
-        logBox.scrollTop = logBox.scrollHeight;
-    }
-}
+    updateBars();
 
-function appendLogToSystem(message) {
-    const logBox = document.getElementById('combat-log');
-    if (logBox) {
-        const msg = document.createElement('div'); msg.className = 'log-entry system-msg'; msg.textContent = message;
-        logBox.appendChild(msg); localStorage.setItem('hud_html_log', logBox.innerHTML);
-    }
-}
+    input.value="";
 
-function clearLog() {
-    document.getElementById('combat-log').innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
-    localStorage.removeItem('hud_html_log');
-}
+});
+
+updateBars();
