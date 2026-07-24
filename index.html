@@ -1,16 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My App</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
-        button { padding: 15px 30px; font-size: 18px; cursor: pointer; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Status Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>My Interactive App</h1>
-    <button id="myBtn">Click Me!</button>
-    <p id="result"></p>
+
+    <div class="game-container">
+        <!-- Character Info Header -->
+        <div class="char-header">
+            <h2>PLAYER 1</h2>
+            <span class="level-tag">LVL 99</span>
+        </div>
+
+        <!-- Health Section -->
+        <div class="stat-container">
+            <div class="stat-labels">
+                <span class="stat-name hp-text">HP</span>
+                <span class="stat-values"><span id="hp-current">100</span> / 100</span>
+            </div>
+            <div class="bar-border">
+                <div id="hp-fill" class="bar-fill hp-bar" style="width: 100%;"></div>
+            </div>
+            <div class="controls">
+                <button onclick="changeStat('hp', -10)">-10</button>
+                <button onclick="changeStat('hp', -1)">-1</button>
+                <input type="number" id="hp-input" min="1" max="100" value="100" oninput="setStat('hp')">
+                <button onclick="changeStat('hp', 1)">+1</button>
+                <button onclick="changeStat('hp', 10)">+10</button>
+            </div>
+        </div>
+
+        <!-- Mana Section -->
+        <div class="stat-container">
+            <div class="stat-labels">
+                <span class="stat-name mp-text">MP</span>
+                <span class="stat-values"><span id="mp-current">100</span> / 100</span>
+            </div>
+            <div class="bar-border">
+                <div id="mp-fill" class="bar-fill mp-bar" style="width: 100%;"></div>
+            </div>
+            <div class="controls">
+                <button onclick="changeStat('mp', -10)">-10</button>
+                <button onclick="changeStat('mp', -1)">-1</button>
+                <input type="number" id="mp-input" min="1" max="100" value="100" oninput="setStat('mp')">
+                <button onclick="changeStat('mp', 1)">+1</button>
+                <button onclick="changeStat('mp', 10)">+10</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
