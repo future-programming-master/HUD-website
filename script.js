@@ -8,6 +8,12 @@ let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
     lastSavedDate: ""
 };
 
+// CRUCIAL DEFENSIVE SAFETY CORRECTION:
+// If system state loaded corrupted zeros or nulls from old storage, force-reset them to 100
+if (!systemState.mpMax || systemState.mpMax <= 0) systemState.mpMax = 100;
+if (systemState.hp === undefined) systemState.hp = 100;
+if (systemState.mp === undefined) systemState.mp = 100;
+
 document.addEventListener("DOMContentLoaded", () => {
     const todayStr = getTodayDateString();
     const dateDisplay = document.getElementById('date-display');
@@ -62,19 +68,17 @@ function applyLifeEvent() {
 
     // MANDATORY TEXT LOCK VALIDATION RULE
     if (rawName === "") {
-        textElement.style.borderColor = "#ff4d4d"; // Flashes input border red
-        textElement.placeholder = "ERROR: NAME IS REQUIRED TO LOG LOG EVENT!";
+        textElement.style.borderColor = "#ff4d4d"; 
+        textElement.placeholder = "ERROR: NAME IS REQUIRED TO LOG EVENT!";
         return;
     }
 
-    // Reset styles if field text exists
     textElement.style.borderColor = "#45a29e";
     textElement.placeholder = "Type event name (REQUIRED)...";
 
     const hpMod = parseInt(hpElement.value) || 0;
     const mpMod = parseInt(mpElement.value) || 0;
 
-    // Enforce calculation restrictions boundaries
     systemState.hp = Math.min(100, Math.max(0, systemState.hp + hpMod));
     systemState.mp = Math.min(systemState.mpMax, Math.max(0, systemState.mp + mpMod));
 
@@ -112,8 +116,8 @@ function renderInterface() {
 
     if (hpFillEl) hpFillEl.style.width = `${systemState.hp}%`;
     
-    // Scale horizontal bar graphic metrics matching base maximum capacity totals
-    if (mpFillEl) {
+    // SAFE DIVISION REFACTOR: Prevents 0 division crash errors completely
+    if (mpFillEl && systemState.mpMax > 0) {
         mpFillEl.style.width = `${(systemState.mp / 100) * 100}%`;
     }
 
@@ -129,7 +133,6 @@ function switchTab(targetTab) {
     const panels = document.querySelectorAll('.tab-panel');
     const tabs = document.querySelectorAll('.nav-tabs .tab-btn');
 
-    // Safe modular layer targets parsing calculations 
     panels.forEach(p => p.classList.add('hidden'));
     tabs.forEach(t => t.remove('active-tab'));
 
