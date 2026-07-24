@@ -1,33 +1,48 @@
 const STATE_KEY = 'hud_system_state';
-
-// Global state container initialization
-let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || {
-    hp: 100,
-    mp: 100,
-    mpMax: 100,
-    lastSavedDate: ""
-};
+let systemState = JSON.parse(localStorage.getItem(STATE_KEY)) || { hp: 100, mp: 100, mpMax: 100, lastSavedDate: "" };
 
 if (!systemState.mpMax || systemState.mpMax <= 0) systemState.mpMax = 100;
 if (systemState.hp === undefined) systemState.hp = 100;
 if (systemState.mp === undefined) systemState.mp = 100;
 
-// SAFE BOOT SYSTEM: Binds functions globally to the browser window immediately
-window.switchTab = function(targetTab) {
+// Safe Event Listener Setup — Zero security policies violations
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Setup Date
+    const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
+    if (document.getElementById('date-display')) document.getElementById('date-display').textContent = todayStr;
+
+    // 2. Setup Navigation Tab Clicks
+    document.getElementById('tab-hud').addEventListener('click', () => switchTab('hud'));
+    document.getElementById('tab-stats').addEventListener('click', () => switchTab('stats'));
+    document.getElementById('tab-quests').addEventListener('click', () => switchTab('quests'));
+
+    // 3. Setup Action Form Click
+    document.getElementById('submit-event-btn').addEventListener('click', applyLifeEvent);
+    document.getElementById('clear-log-btn').addEventListener('click', clearLog);
+
+    // 4. Setup Modal Buttons Clicks
+    document.getElementById('btn-perfect').addEventListener('click', () => processAwakening('perfect'));
+    document.getElementById('btn-mediocre').addEventListener('click', () => processAwakening('mediocre'));
+    document.getElementById('btn-trash').addEventListener('click', () => processAwakening('trash'));
+
+    // 5. Initialize Display or show overlay popup
+    const modal = document.getElementById('awakening-modal');
+    if (systemState.lastSavedDate !== todayStr && modal) {
+        modal.classList.remove('hidden');
+    } else {
+        renderInterface();
+    }
+});
+
+function switchTab(targetTab) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
     document.querySelectorAll('.nav-tabs .tab-btn').forEach(t => t.remove('active-tab'));
-    
-    const panel = document.getElementById(`panel-${targetTab}`);
-    const tabBtn = document.getElementById(`tab-${targetTab}`);
-    
-    if (panel) panel.classList.remove('hidden');
-    if (tabBtn) tabBtn.classList.add('active-tab');
-};
+    if (document.getElementById(`panel-${targetTab}`)) document.getElementById(`panel-${targetTab}`).classList.remove('hidden');
+    if (document.getElementById(`tab-${targetTab}`)) document.getElementById(`tab-${targetTab}`).classList.add('active-tab');
+}
 
-window.processAwakening = function(choice) {
-    const todayStr = getTodayDateString();
-    systemState.lastSavedDate = todayStr;
-
+function processAwakening(choice) {
+    systemState.lastSavedDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
     if (choice === 'perfect') {
         systemState.hp = 100; systemState.mpMax = 100; systemState.mp = 100;
         appendLogToSystem("[Awakening: Perfect Rest logged.]");
@@ -38,38 +53,32 @@ window.processAwakening = function(choice) {
         systemState.hp = Math.max(0, systemState.hp - 10); systemState.mpMax = 40; systemState.mp = 40;
         appendLogToSystem("[Awakening: Trash Sleep logged.]");
     }
-
-    const modal = document.getElementById('awakening-modal');
-    if (modal) modal.classList.add('hidden');
-    
-    saveStateToStorage();
+    document.getElementById('awakening-modal').classList.add('hidden');
+    localStorage.setItem(STATE_KEY, JSON.stringify(systemState));
     renderInterface();
-};
+}
 
-window.applyLifeEvent = function() {
+function applyLifeEvent() {
     const textElement = document.getElementById('event-text');
     const hpElement = document.getElementById('event-hp');
     const mpElement = document.getElementById('event-mp');
-
-    if (!textElement || !hpElement || !mpElement) return;
     const rawName = textElement.value.trim();
 
     if (rawName === "") {
-        textElement.style.borderColor = "#ff4d4d"; 
-        textElement.placeholder = "ERROR: NAME IS REQUIRED TO LOG EVENT!";
+        textElement.style.borderColor = "#ff4d4d";
+        textElement.placeholder = "NAME REQUIRED!";
         return;
     }
 
     textElement.style.borderColor = "#45a29e";
     textElement.placeholder = "Type event name (REQUIRED)...";
-
     const hpMod = parseInt(hpElement.value) || 0;
     const mpMod = parseInt(mpElement.value) || 0;
 
     systemState.hp = Math.min(100, Math.max(0, systemState.hp + hpMod));
     systemState.mp = Math.min(systemState.mpMax, Math.max(0, systemState.mp + mpMod));
 
-    saveStateToStorage();
+    localStorage.setItem(STATE_KEY, JSON.stringify(systemState));
     renderInterface();
 
     const logBox = document.getElementById('combat-log');
@@ -81,30 +90,16 @@ window.applyLifeEvent = function() {
         logBox.scrollTop = logBox.scrollHeight;
         localStorage.setItem('hud_html_log', logBox.innerHTML);
     }
-    
     textElement.value = "";
-};
-
-window.clearLog = function() {
-    const logBox = document.getElementById('combat-log');
-    if (logBox) logBox.innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
-    localStorage.removeItem('hud_html_log');
-};
+}
 
 function renderInterface() {
-    const hpCurrentEl = document.getElementById('hp-current');
-    const mpCurrentEl = document.getElementById('mp-current');
-    const mpMaxEl = document.getElementById('mp-max-label');
-    const hpFillEl = document.getElementById('hp-fill');
-    const mpFillEl = document.getElementById('mp-fill');
-
-    if (hpCurrentEl) hpCurrentEl.textContent = systemState.hp;
-    if (mpCurrentEl) mpCurrentEl.textContent = systemState.mp;
-    if (mpMaxEl) mpMaxEl.textContent = systemState.mpMax;
-
-    if (hpFillEl) hpFillEl.style.width = `${systemState.hp}%`;
-    if (mpFillEl) mpFillEl.style.width = `${(systemState.mp / systemState.mpMax) * 100}%`;
-
+    document.getElementById('hp-current').textContent = systemState.hp;
+    document.getElementById('mp-current').textContent = systemState.mp;
+    document.getElementById('mp-max-label').textContent = systemState.mpMax;
+    document.getElementById('hp-fill').style.width = `${systemState.hp}%`;
+    document.getElementById('mp-fill').style.width = `${(systemState.mp / systemState.mpMax) * 100}%`;
+    
     const logBox = document.getElementById('combat-log');
     const savedHtmlLog = localStorage.getItem('hud_html_log');
     if (logBox && savedHtmlLog) {
@@ -113,37 +108,15 @@ function renderInterface() {
     }
 }
 
-function getTodayDateString() {
-    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
-}
-
 function appendLogToSystem(message) {
     const logBox = document.getElementById('combat-log');
     if (logBox) {
-        const systemMsg = document.createElement('div');
-        systemMsg.className = 'log-entry system-msg';
-        systemMsg.textContent = message;
-        logBox.appendChild(systemMsg);
-        localStorage.setItem('hud_html_log', logBox.innerHTML);
+        const msg = document.createElement('div'); msg.className = 'log-entry system-msg'; msg.textContent = message;
+        logBox.appendChild(msg); localStorage.setItem('hud_html_log', logBox.innerHTML);
     }
 }
 
-function saveStateToStorage() {
-    localStorage.setItem(STATE_KEY, JSON.stringify(systemState));
+function clearLog() {
+    document.getElementById('combat-log').innerHTML = '<div class="log-entry system-msg">[Log wiped clean.]</div>';
+    localStorage.removeItem('hud_html_log');
 }
-
-// Global initialization listener
-document.addEventListener("DOMContentLoaded", () => {
-    const todayStr = getTodayDateString();
-    const dateDisplay = document.getElementById('date-display');
-    if (dateDisplay) dateDisplay.textContent = todayStr;
-
-    const modal = document.getElementById('awakening-modal');
-    if (systemState.lastSavedDate !== todayStr && modal) {
-        modal.classList.remove('hidden');
-    } else {
-        renderInterface();
-    }
-});
-
-
